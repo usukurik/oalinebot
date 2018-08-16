@@ -30,10 +30,6 @@ from linebot.models import (
 	UnfollowEvent, FollowEvent, JoinEvent, LeaveEvent, BeaconEvent
 )
 
-translator = Translator()
-wiki_settings = {}
-
-
 app = Flask(__name__)
 
 line_bot_api = LineBotApi('rHTAmvpJ5VWddwHReaJbdu6tApKtDs4Y6wtrN6ceDS7pMjgATl9Djo8p0TO61lOX1hxjxs1oLv+W7c89udkO+jNkdLw9cd6LzbafdptMZr5XdI1SbaRw1/j7o3XX05rpR51w33dq6gGDVX/P5L0neAdB04t89/1O/w1cDnyilFU=')
