@@ -1,603 +1,983 @@
 import errno
+
 import os
+
 import sys
+
 import tempfile
-from argparse import ArgumentParser
-from urllib.parse import quote
-from kbbi import KBBI
-from urbandictionary_top import udtop
-from googletrans import Translator
-import requests
-import wikipedia
+
+
 
 from flask import Flask, request, abort
 
+
+
 from linebot import (
-	LineBotApi, WebhookHandler
+
+    LineBotApi, WebhookHandler
+
 )
+
 from linebot.exceptions import (
-	InvalidSignatureError, LineBotApiError
+
+    InvalidSignatureError
+
 )
+
+from linebot.models import *
+
+import requests, json
+
+
+
 from linebot.models import (
-	MessageEvent, TextMessage, TextSendMessage, ImageSendMessage, SourceGroup, SourceRoom,
-	TemplateSendMessage, ConfirmTemplate, MessageTemplateAction,
-	ButtonsTemplate, ImageCarouselTemplate, ImageCarouselColumn, URITemplateAction,
-	PostbackTemplateAction, DatetimePickerTemplateAction,
-	CarouselTemplate, CarouselColumn, PostbackEvent,
-	StickerMessage, StickerSendMessage, LocationMessage, LocationSendMessage,
-	ImageMessage, VideoMessage, AudioMessage, FileMessage,
-	VideoSendMessage, AudioSendMessage,
-	UnfollowEvent, FollowEvent, JoinEvent, LeaveEvent, BeaconEvent
+
+    MessageEvent, TextMessage, TextSendMessage,
+
+    SourceUser, SourceGroup, SourceRoom,
+
+    TemplateSendMessage, ConfirmTemplate, MessageAction,
+
+    ButtonsTemplate, ImageCarouselTemplate, ImageCarouselColumn, URIAction,
+
+    PostbackAction, DatetimePickerAction,
+
+    CarouselTemplate, CarouselColumn, PostbackEvent,
+
+    StickerMessage, StickerSendMessage, LocationMessage, LocationSendMessage,
+
+    ImageMessage, VideoMessage, AudioMessage, FileMessage,
+
+    UnfollowEvent, FollowEvent, JoinEvent, LeaveEvent, BeaconEvent,
+
+    FlexSendMessage, BubbleContainer, ImageComponent, BoxComponent,
+
+    TextComponent, SpacerComponent, IconComponent, ButtonComponent,
+
+    SeparatorComponent,
+
 )
+
+
 
 app = Flask(__name__)
 
-line_bot_api = LineBotApi('rHTAmvpJ5VWddwHReaJbdu6tApKtDs4Y6wtrN6ceDS7pMjgATl9Djo8p0TO61lOX1hxjxs1oLv+W7c89udkO+jNkdLw9cd6LzbafdptMZr5XdI1SbaRw1/j7o3XX05rpR51w33dq6gGDVX/P5L0neAdB04t89/1O/w1cDnyilFU=')
-handler = WebhookHandler('6a6ab57258300b6699d0074186ee968f')
 
-static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
 
-# function for create tmp dir for download content
-def make_static_tmp_dir():
-	try:
-		os.makedirs(static_tmp_path)
-	except OSError as exc:
-		if exc.errno == errno.EEXIST and os.path.isdir(static_tmp_path):
-			pass
-		else:
-			raise
+# Channel Access Token
+
+line_bot_api = LineBotApi('dAA1AZl+mAy4PwIo+dMtddNuqM6PFYmDvm4bbCBATZDuo3RmQc6cUGLHhoQp9jCMFEs5J/vbvpmUXiU3nu2PpSb4RrodFgaK4seKGgP+R1gDuyE/Bhcc9nUeHEXcIj0zywH1dElgzQrd4/O4DX2f+QdB04t89/1O/w1cDnyilFU=')
+
+# Channel Secret
+
+handler = WebhookHandler('e64f7eb2e5cd36493c8a2ac5e3dd28b6')
+
+#===========[ NOTE SAVER ]=======================
+
+notes = {}
+
+
+
+# Post Request
 
 @app.route("/callback", methods=['POST'])
+
 def callback():
-	# get X-Line-Signature header value
-	signature = request.headers['X-Line-Signature']
 
-	# get request body as text
-	body = request.get_data(as_text=True)
-	app.logger.info("Request body: " + body)
+    signature = request.headers['X-Line-Signature']
 
-	# handle webhook body
-	try:
-		handler.handle(body, signature)
-	except InvalidSignatureError:
-		abort(400)
+    body = request.get_data(as_text=True)
 
-	return 'OK'
+    app.logger.info("Request body: " + body)
 
+    try:
 
-@handler.add(MessageEvent, message=TextMessage)
-def handle_text_message(event):
+        handler.handle(body, signature)
 
-	text=event.message.text
-	
-	if isinstance(event.source, SourceGroup):
-		subject = line_bot_api.get_group_member_profile(event.source.group_id,
-														event.source.user_id)
-		set_id = event.source.group_id
-	elif isinstance(event.source, SourceRoom):
-		subject = line_bot_api.get_room_member_profile(event.source.room_id,
-                                                   event.source.user_id)
-		set_id = event.source.room_id
-	else:
-		subject = line_bot_api.get_profile(event.source.user_id)
-		set_id = event.source.user_id
-	
-	def split1(text):
-		return text.split('/wolfram ', 1)[-1]
-		
-	def split2(text):
-		return text.split('/kbbi ', 1)[-1]
-		
-	def split3(text):
-		return text.split('/echo ', 1)[-1]
+    except InvalidSignatureError:
 
-	def split4(text):
-		return text.split('/wolframs ', 1)[-1]
-	
-	def split5(text):
-		return text.split('/trans ', 1)[-1]
-	
-	def split6(text):
-		return text.split('/wiki ', 1)[-1]
-	
-	def split7(text):
-		return text.split('/wikilang ', 1)[-1]
-		
-	def split8(text):
-		return text.split('/urban ', 1)[-1]
+        abort(400)
 
-	def split9(text):
-		return text.split('/ox ', 1)[-1]
-		
-	def ox(keyword):
-		oxdict_appid = ('7dff6c56')
-		oxdict_key = ('41b55bba54078e9fb9f587f1b978121f')
-		
-		word = quote(keyword)
-		url = ('https://od-api.oxforddictionaries.com:443/api/v1/entries/en/{}'.format(word))
-		req = requests.get(url, headers={'app_id': oxdict_appid, 'app_key': oxdict_key})
-		if "No entry available" in req.text:
-			return 'No entry available for "{}".'.format(word)
+    return 'OK'
 
-		req = req.json()
-		result = ''
-		i = 0
-		for each_result in req['results']:
-			for each_lexEntry in each_result['lexicalEntries']:
-				for each_entry in each_lexEntry['entries']:
-					for each_sense in each_entry['senses']:
-						if 'crossReferenceMarkers' in each_sense:
-							search = 'crossReferenceMarkers'
-						else:
-							search = 'definitions'
-						for each_def in each_sense[search]:
-							i += 1
-							result += '\n{}. {}'.format(i, each_def)
-
-		if i == 1:
-			result = 'Definition of {}:\n'.format(keyword) + result[4:]
-		else:
-			result = 'Definitions of {}:'.format(keyword) + result
-		return result
-
-	
-	def wolfram(query):
-		wolfram_appid = ('83L4JP-TWUV8VV7J7')
-
-		url = 'https://api.wolframalpha.com/v2/result?i={}&appid={}'
-		return requests.get(url.format(quote(query), wolfram_appid)).text
-		
-	def wolframs(query):
-		wolfram_appid = ('83L4JP-TWUV8VV7J7')
-
-		url = 'https://api.wolframalpha.com/v2/simple?i={}&appid={}'
-		return url.format(quote(query), wolfram_appid)
-	
-	def trans(word):
-		sc = 'en'
-		to = 'id'
-		
-		if word[0:].lower().strip().startswith('sc='):
-			sc = word.split(', ', 1)[0]
-			sc = sc.split('sc=', 1)[-1]
-			word = word.split(', ', 1)[1]
-	
-		if word[0:].lower().strip().startswith('to='):
-			to = word.split(', ', 1)[0]
-			to = to.split('to=', 1)[-1]
-			word = word.split(', ', 1)[1]
-			
-		if word[0:].lower().strip().startswith('sc='):
-			sc = word.split(', ', 1)[0]
-			sc = sc.split('sc=', 1)[-1]
-			word = word.split(', ', 1)[1]
-			
-		return translator.translate(word, src=sc, dest=to).text
-		
-	def wiki_get(keyword, set_id, trim=True):
-    
-		try:
-			wikipedia.set_lang(wiki_settings[set_id])
-		except KeyError:
-			wikipedia.set_lang('en')
-
-		try:
-			result = wikipedia.summary(keyword)
-
-		except wikipedia.exceptions.DisambiguationError:
-			articles = wikipedia.search(keyword)
-			result = "{} disambiguation:".format(keyword)
-			for item in articles:
-				result += "\n{}".format(item)
-		except wikipedia.exceptions.PageError:
-			result = "{} not found!".format(keyword)
-
-		else:
-			if trim:
-				result = result[:2000]
-				if not result.endswith('.'):
-					result = result[:result.rfind('.')+1]
-		return result
-		
-	def wiki_lang(lang, set_id):
-    
-		langs_dict = wikipedia.languages()
-		if lang in langs_dict.keys():
-			wiki_settings[set_id] = lang
-			return ("Language has been changed to {} successfully."
-					.format(langs_dict[lang]))
-
-		return ("{} not available!\n"
-				"See meta.wikimedia.org/wiki/List_of_Wikipedias for "
-				"a list of available languages, and use the prefix "
-				"in the Wiki column to set the language."
-				.format(lang))	
-	
-	def find_kbbi(keyword, ex=True):
-
-		try:
-			entry = KBBI(keyword)
-		except KBBI.TidakDitemukan as e:
-			result = str(e)
-		else:
-			result = "Definisi {}:\n".format(keyword)
-			if ex:
-				result += '\n'.join(entry.arti_contoh)
-			else:
-				result += str(entry)
-		return result
-	
-	def urban(keyword, ex=True):
-		
-		try:
-			entry = udtop(keyword)
-		except (TypeError, AttributeError, udtop.TermNotFound) :
-			result = "{} definition not found in urbandictionary.".format(keyword)
-		else:
-			result = "{} definition:\n".format(keyword)
-			if ex:
-				result += str(entry)
-			else:
-				result += entry.definition
-		return result
-	
-	if text == '/help':
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage('I will be here for you'))
-	
-	elif text == '/leave':
-		if isinstance(event.source, SourceGroup):
-			line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('I am leaving the group...'))
-			line_bot_api.leave_group(event.source.group_id)
-		
-		elif isinstance(event.source, SourceRoom):
-			line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('I am leaving the group...'))
-			line_bot_api.leave_room(event.source.room_id)
-			
-		else:
-			line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('>_< cannot do...'))
-	
-	elif text == '/about':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage("Hello, my name is Aditmadzs\n"
-								"Nice to meet you... \n"
-								"source code: https://github.com/Aditmadzs"))
-	
-	elif text == '/cmd':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage("Without parameters: \n"
-								"/about, /help, /profile, /leave, /lang \n"
-								"/confirm, /buttons, /search image, \n"
-								"/manga, /dots, /track, /bet \n"
-								"/image_carousel, /imagemap \n"
-								"\n"
-								"With parameters: \n"
-								"/echo, /kbbi, /wolfram, /wolframs, \n"
-								"/trans, /wiki, /wikilang, /urban, /ox"))
-	
-	elif text == '/lang':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage("Language for translation see here \n"
-								"https://github.com/Aditmadzs/oalinebot/blob/master/Lang.txt"))
-	
-	elif text == '/test':
-		line_bot_api.reply_message(
-				event.reply_token,
-				AudioSendMessage(original_content_url='http://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a',
-									duration=240000))
-	
-	elif text == '/manga':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage("mangaku.in"))
-	
-	elif text == '/ig':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage("https://www.instagram.com/aditmadzs1"))
-	
-	elif text == '/track':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage("http://dota2.prizetrac.kr/international2018"))
-	
-	elif text == '/bet':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage("dota2.com/predictions"))
-	
-	elif text == '/search image':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage("Try this up \n"
-								"https://reverse.photos/"))
-	
-	elif text == '/profile':
-		if isinstance(event.source, SourceGroup):
-			try:
-				profile = line_bot_api.get_group_member_profile(event.source.group_id, event.source.user_id)
-				result = ("Display name: " + profile.display_name + "\n" +
-						  "Profile picture: " + profile.picture_url + "\n" +
-						  "User_ID: " + profile.user_id)
-			except LineBotApiError:
-				pass	
-			line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage(result))
-			
-		
-		elif isinstance(event.source, SourceRoom):
-			try:
-				profile = line_bot_api.get_room_member_profile(event.source.room_id, event.source.user_id)
-				result = ("Display name: " + profile.display_name + "\n" +
-						  "Profile picture: " + profile.picture_url + "\n" +
-						  "User_ID: " + profile.user_id)
-			except LineBotApiError:
-				pass	
-			line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage(result))
-			
-				
-		else:
-			try:
-				profile = line_bot_api.get_profile(event.source.user_id)
-				result = ("Display name: " + profile.display_name + "\n" +
-						  "Profile picture: " + profile.picture_url + "\n" +
-						  "User_ID: " + profile.user_id)
-				if profile.status_message:
-					result += "\n" + "Status message: " + profile.status_message
-			except LineBotApiError:
-				pass
-			line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage(result))
-	
-	elif text=='/kbbi':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('command /kbbi {input}'))
-	
-	elif text=='/urban':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('command /urban {input}'))
-	
-	elif text=='/ox':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('command /ox {input}'))
-	
-	elif text=='/wolfram':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('command /wolfram {input}'))
-				
-	elif text=='/trans':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('command /trans sc={}, to={}, {text}'))
-	
-	elif text=='/wiki':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('command /wiki {text}'))
-				
-	elif text=='/wikilang':
-		line_bot_api.reply_message(
-				event.reply_token,
-				TextSendMessage('command /wikilang {language_id}'))
-	
-	elif text == '/confirm':
-		confirm_template = ConfirmTemplate(text='Do it?', actions=[
-			MessageTemplateAction(label='Yes', text='Yes!'),
-			MessageTemplateAction(label='No', text='No!'),
-			])
-		template_message = TemplateSendMessage(
-			alt_text='Confirm alt text', template=confirm_template)
-		line_bot_api.reply_message(event.reply_token, template_message)
-	
-	elif text == '/buttons':
-		buttons_template = ButtonsTemplate(
-			title='My buttons sample', text='Hello, my buttons', actions=[
-				URITemplateAction(
-					label='Go to line.me', uri='https://line.me'),
-				PostbackTemplateAction(label='ping', data='ping'),
-				PostbackTemplateAction(
-					label='ping with text', data='ping',
-					text='ping'),
-				MessageTemplateAction(label='Translate Rice', text='米')
-			])
-		template_message = TemplateSendMessage(
-			alt_text='Buttons alt text', template=buttons_template)
-		line_bot_api.reply_message(event.reply_token, template_message)
-	
-	elif text == '/image_carousel':
-		image_carousel_template = ImageCarouselTemplate(columns=[
-			ImageCarouselColumn(image_url='https://via.placeholder.com/1024x1024',
-								action=DatetimePickerTemplateAction(label='datetime',
-																	data='datetime_postback',
-																	mode='datetime')),
-			ImageCarouselColumn(image_url='https://via.placeholder.com/1024x1024',
-								action=DatetimePickerTemplateAction(label='date',
-																	data='date_postback',
-																	mode='date'))
-		])
-		template_message = TemplateSendMessage(
-			alt_text='ImageCarousel alt text', template=image_carousel_template)
-		line_bot_api.reply_message(event.reply_token, template_message)
-		
-	elif text == '/imagemap':
-		pass
-	
-	elif text[0:].lower().strip().startswith('/wolfram '):
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage(wolfram(split1(text))))
-			
-	elif text[0:].lower().strip().startswith('/wolframs '):
-		line_bot_api.reply_message(
-			event.reply_token,
-			ImageSendMessage(original_content_url= wolframs(split4(text)),
-								preview_image_url= wolframs(split4(text))))
-
-	elif text[0:].lower().strip().startswith('/kbbi '):
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage(find_kbbi(split2(text))))
-			
-	elif text[0:].lower().strip().startswith('/urban '):
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage(urban(split8(text))))
-			
-	elif text[0:].lower().strip().startswith('/ox '):
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage(ox(split9(text))))
-			
-	elif text[0:].lower().strip().startswith('/echo ') :
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage(split3(text)))
-			
-	elif text[0:].lower().strip().startswith('/trans ') :
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage(trans(split5(text))))
-	
-	elif text[0:].lower().strip().startswith('/wiki ') :
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage(wiki_get(split6(text), set_id=set_id)))
-			
-	elif text[0:].lower().strip().startswith('/wikilang ') :
-		line_bot_api.reply_message(
-			event.reply_token,
-			TextSendMessage(wiki_lang(split7(text), set_id=set_id)))
-			
-@handler.add(MessageEvent, message=LocationMessage)
-def handle_location_message(event):
-	line_bot_api.reply_message(
-		event.reply_token,
-		LocationSendMessage(
-			title=event.message.title, address=event.message.address,
-			latitude=event.message.latitude, longitude=event.message.longitude
-		)
-	)
-
-@handler.add(MessageEvent, message=StickerMessage)
-def handle_sticker_message(event):
-	line_bot_api.reply_message(
-		event.reply_token,
-		StickerSendMessage(
-			package_id=event.message.package_id,
-			sticker_id=event.message.sticker_id)
-	)
-	
-# Other Message Type
-@handler.add(MessageEvent, message=(ImageMessage, VideoMessage, AudioMessage))
-def handle_content_message(event):
-	if isinstance(event.message, ImageMessage):
-		ext = 'jpg'
-	elif isinstance(event.message, VideoMessage):
-		ext = 'mp4'
-	elif isinstance(event.message, AudioMessage):
-		ext = 'm4a'
-	else:
-		return
-
-	message_content = line_bot_api.get_message_content(event.message.id)
-	with tempfile.NamedTemporaryFile(dir=static_tmp_path, prefix=ext + '-', delete=False) as tf:
-		for chunk in message_content.iter_content():
-			tf.write(chunk)
-		tempfile_path = tf.name
-
-	dist_path = tempfile_path + '.' + ext
-	dist_name = os.path.basename(dist_path)
-	os.rename(tempfile_path, dist_path)
-	dist_name = dist_name.replace(" ","_")
-	
-	line_bot_api.reply_message(
-		event.reply_token, [
-			TextSendMessage(text='Save content.'),
-			TextSendMessage(text=request.host_url + os.path.join('static', 'tmp', dist_name))
-		])
-		
-@handler.add(MessageEvent, message=FileMessage)
-def handle_file_message(event):
-	message_content = line_bot_api.get_message_content(event.message.id)
-	with tempfile.NamedTemporaryFile(dir=static_tmp_path, prefix='file-', delete=False) as tf:
-		for chunk in message_content.iter_content():
-			tf.write(chunk)
-		tempfile_path = tf.name
-
-		
-	dist_path = tempfile_path + '-' + event.message.file_name
-	dist_name = os.path.basename(dist_path)
-	os.rename(tempfile_path, dist_path)
-	dist_name = dist_name.replace(" ","_")
-	
-	line_bot_api.reply_message(
-		event.reply_token, [
-			TextSendMessage(text='Save file.'),
-			TextSendMessage(text=request.host_url + os.path.join('static', 'tmp', dist_name))
-		])
-		
-@handler.add(FollowEvent)
-def handle_follow(event):
-	line_bot_api.reply_message(
-		event.reply_token, TextSendMessage(text='Got follow event'))
-
-
-@handler.add(UnfollowEvent)
-def handle_unfollow():
-	app.logger.info("Got Unfollow event")
 
 
 @handler.add(JoinEvent)
+
 def handle_join(event):
-	line_bot_api.reply_message(
-		event.reply_token,
-		TextSendMessage(text='Hi, my name is Reika. Hope we can make some fun in this ' + event.source.type))
-		
-@handler.add(LeaveEvent)
-def handle_leave():
-	app.logger.info("Bye")
+
+    line_bot_api.reply_message(
+
+        event.reply_token,
+
+        TextSendMessage(text='Type /help for command :D')) 
+
+    
+
+@handler.add(MessageEvent, message=TextMessage)
+
+def handle_text_message(event):
+
+    text = event.message.text
+
+    
+
+@handler.add(MessageEvent, message=TextMessage)
+
+def handle_message(event):
+
+    text = event.message.text #simplify for receove message
+
+    sender = event.source.user_id #get user_id
+
+    gid = event.source.sender_id #get group_id
+
+    
+
+#=====[ LEAVE GROUP OR ROOM ]==========[ ARSYBAI ]======================
+
+    if text == '/me':
+
+        if isinstance(event.source, SourceUser):
+
+            profile = line_bot_api.get_profile(event.source.user_id)
+
+            line_bot_api.reply_message(
+
+                event.reply_token, [
+
+                    TextSendMessage(text='Display name: ' + profile.display_name),
+
+                    TextSendMessage(text='Status message: ' + profile.status_message)
+
+                ]
+
+            )
+
+        else:
+
+            line_bot_api.reply_message(
+
+                event.reply_token,
+
+                TextSendMessage(text="Bot can't use profile in group chat"))
 
 
-@handler.add(PostbackEvent)
-def handle_postback(event):
-	if event.postback.data == 'ping':
-		line_bot_api.reply_message(
-			event.reply_token, TextSendMessage(text='pong'))
-	elif event.postback.data == 'datetime_postback':
-		line_bot_api.reply_message(
-			event.reply_token, TextSendMessage(text=event.postback.params['datetime']))
-	elif event.postback.data == 'date_postback':
-		line_bot_api.reply_message(
-			event.reply_token, TextSendMessage(text=event.postback.params['date']))
 
+    if text == '#yudbye':
 
-@handler.add(BeaconEvent)
-def handle_beacon(event):
-	line_bot_api.reply_message(
-		event.reply_token,
-		TextSendMessage(
-			text='Got beacon event. hwid={}, device_message(hex string)={}'.format(
-				event.beacon.hwid, event.beacon.dm)))
-	
+        if isinstance(event.source, SourceGroup):
+
+            line_bot_api.reply_message(
+
+                event.reply_token, TextSendMessage(text='Yudha pergi bye-bye'))
+
+            line_bot_api.leave_group(event.source.group_id)
+
+        elif isinstance(event.source, SourceRoom):
+
+            line_bot_api.reply_message(
+
+                event.reply_token, TextSendMessage(text='Yudha pergi bye-bye'))
+
+            line_bot_api.leave_room(event.source.room_id)
+
+        else:
+
+            line_bot_api.reply_message(
+
+                event.reply_token,
+
+                TextSendMessage(text="Bot can't leave from 1:1 chat"))
+
+#=====[ TES MESSAGE ]=============[ ARSYBAI ]======================
+
+    if text == "redtube on":
+
+    	angka = random.randint(1, 20)
+
+    	r = requests.get('https://api.eater.pw/redtube/{}'.format(angka))
+
+    	data=r.text
+
+    	data=json.loads(data)
+
+    	for anu in data["result"]:
+
+        	line_bot_api.reply_message(event.reply_token,VideoSendMessage(original_content_url=anu["dl"], preview_image_url=anu["img"]))
+
+    elif text == "xvideos on":
+
+    	angka = random.randint(1, 20)
+
+    	r = requests.get('https://api.eater.pw/xvideos/{}'.format(angka))
+
+    	data=r.text
+
+    	data=json.loads(data)
+
+    	for anu in data["result"]:
+
+    		line_bot_api.reply_message(event.reply_token,VideoSendMessage(original_content_url=anu["dl"], preview_image_url=anu["img"]))
+
+#=====[ TES MESSAGE ]=============[ ARSYBAI ]======================
+
+    elif text == 'confirm':
+
+        confirm_template = ConfirmTemplate(text='Bot nya bagus?', actions=[
+
+            MessageTemplateAction(label='Yes', text='Yes!'),
+
+            MessageTemplateAction(label='No', text='No!'),
+
+        ])
+
+        template_message = TemplateSendMessage(
+
+            alt_text='Confirm alt text', template=confirm_template)
+
+        line_bot_api.reply_message(event.reply_token, template_message)
+
+    elif "/idline: " in event.message.text:
+
+        skss = event.message.text.replace('/idline: ', '')
+
+        sasa = "http://line.me/R/ti/p/~" + skss
+
+        text_message = TextSendMessage(text=sasa)
+
+        line_bot_api.reply_message(event.reply_token, text_message)
+
+        return 0
+
+    elif "/apakah " in event.message.text:
+
+        quo = ('Iya','Tidak','Gak tau','Bisa jadi','Mungkin iya','Mungkin tidak')
+
+        jwb = random.choice(quo)
+
+        text_message = TextSendMessage(text=jwb)
+
+        line_bot_api.reply_message(event.reply_token, text_message)
+
+        return 0
+
+    elif (text == 'Bot') or (text == 'bot'):
+
+        message = TextSendMessage(text='Siapa bot? ke bot an lu')
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'Tes') or (text == 'tes') or (text == 'Test') or (text == 'test'):
+
+        message = TextSendMessage(text='suk beybeh')
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'Yudha') or (text == 'Yud') or (text == 'yud') or (text == 'yudha'):
+
+        message = TextSendMessage(text='Apa manggil-manggil cogan')
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif text == '.':
+
+        message = TextSendMessage(text='Titik titik amat so high lu')
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'Bah') or (text == 'bah'):
+
+        message = TextSendMessage(text='Beh')
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+#=====[ TEMPLATE MESSAGE ]=============[ ARSYBAI ]======================
+
+    elif text == '/tools':
+
+        buttons_template = TemplateSendMessage(
+
+            alt_text='Tools message',
+
+            template=ButtonsTemplate(
+
+                title='[ TOOLS MESSAGE ]',
+
+                text= 'Tap the Button',
+
+                actions=[
+
+                    MessageTemplateAction(
+
+                        label='App Cloner',
+
+                        text='/app clone'
+
+                    ),
+
+                    MessageTemplateAction(
+
+                        label='Cek idline',
+
+                        text='/idline: yud.xx'
+
+                    ),
+
+                    MessageTemplateAction(
+
+                        label='Your profile',
+
+                        text='/me'
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        
+
+        line_bot_api.reply_message(event.reply_token, buttons_template)
+
+    elif (text == '/help') or (text == 'help') or (text == 'Help'):
+
+        buttons_template = TemplateSendMessage(
+
+            alt_text='Help message',
+
+            template=ButtonsTemplate(
+
+                title='[ HELP MESSAGE ]',
+
+                text= 'Tap the Button',
+
+                actions=[
+
+                    MessageTemplateAction(
+
+                        label='My Creator',
+
+                        text='/creator'
+
+                    ),
+
+                    MessageTemplateAction(
+
+                        label='List bot',
+
+                        text='/bots yud'
+
+                    ),
+
+                    MessageTemplateAction(
+
+                        label='Tools',
+
+                        text='/tools'
+
+                    ),
+
+                    MessageTemplateAction(
+
+                        label='Bot bye',
+
+                        text='#yudbye'
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        
+
+        line_bot_api.reply_message(event.reply_token, buttons_template)
+
+#=====[ CAROUSEL MESSAGE ]==========[ ARSYBAI ]======================
+
+    elif text == '/bots yud':
+
+        message = TemplateSendMessage(
+
+            alt_text='List Bot',
+
+            template=CarouselTemplate(
+
+                columns=[
+
+                    CarouselColumn(
+
+                        title='Bots v1',
+
+                        text='yudha public bot v1',
+
+                        actions=[
+
+                            URITemplateAction(
+
+                                label='>ƴudha bot<',
+
+                                uri='https://line.me/ti/p/~yudpublicbotv1'
+
+                            )
+
+                        ]
+
+                    ),
+
+                    CarouselColumn(
+
+                        title='Bots v2',
+
+                        text='yudha public bot v2',
+
+                        actions=[
+
+                            URITemplateAction(
+
+                                label='>ƴudha bot<',
+
+                                uri='https://line.me/ti/p/~yudpublicbotv2'
+
+                            )
+
+                        ]
+
+                    ),
+
+                    CarouselColumn(
+
+                        title='Bots official',
+
+                        text='Yudha public bot official',
+
+                        actions=[
+
+                            URITemplateAction(
+
+                                label='>ƴudha bot<',
+
+                                uri='https://line.me/ti/p/%40ndw0429j'
+
+                            )
+
+                        ]
+
+                    ),
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == '/creator') or (text == 'About'):
+
+        message = TemplateSendMessage(
+
+            alt_text='My creator',
+
+            template=CarouselTemplate(
+
+                columns=[
+
+                    CarouselColumn(
+
+                        title='Creator-PC',
+
+                        text='This is my creator',
+
+                        actions=[
+
+                            URITemplateAction(
+
+                                label='>ƴudha<',
+
+                                uri='https://line.me/ti/p/~yud.xx'
+
+                            )
+
+                        ]
+
+                    ),
+
+                    CarouselColumn(
+
+                        title='Creator-OA',
+
+                        text='This is my creator',
+
+                        actions=[
+
+                            URITemplateAction(
+
+                                label='>ƴudha<',
+
+                                uri='https://line.me/ti/p/%40has6814j'
+
+                            )
+
+                        ]
+
+                    ),
+
+                    CarouselColumn(
+
+                        title='OA-FAMS',
+
+                        text='This is my Fams',
+
+                        actions=[
+
+                            URITemplateAction(
+
+                                label='>ƴudha<',
+
+                                uri='https://line.me/ti/p/%40ikj9968f'
+
+                            )
+
+                        ]
+
+                    ),
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    if event.message.text == "/app clone":
+
+        buttons_template = TemplateSendMessage(
+
+            alt_text='App clone',
+
+            template=ButtonsTemplate(
+
+                title='Aplikasi clone',
+
+                text='Klik salah satu menu dibawah ini.',
+
+                thumbnail_image_url='https://imgur.com/Hbv4GWl.jpg',
+
+                actions=[
+
+                    URITemplateAction(
+
+                        label='Parallel Space',
+
+                        uri='https://play.google.com/store/apps/details?id=com.lbe.parallel.intl'
+
+                    ),
+
+                    URITemplateAction(
+
+                        label='APP Cloner',
+
+                        uri='https://play.google.com/store/apps/details?id=com.applisto.appcloner'
+
+                    ),
+
+                    URITemplateAction(
+
+                        label='2Accounts',
+
+                        uri='https://play.google.com/store/apps/details?id=com.excelliance.multiaccount'
+
+                    ),
+
+                    URITemplateAction(
+
+                        label='Multi clone',
+
+                        uri='https://play.google.com/store/apps/details?id=com.jumobile.multiapp'
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, buttons_template)
+
+        return 0
+
+#=====[ FLEX MESSAGE ]==========[ ARSYBAI ]======================
+
+    elif text == 'yud test':
+
+        message = ImagemapSendMessage(
+
+            base_url='https://i.imgur.com/g8P1V9Q.jpg',
+
+            alt_text='manyimak corom',
+
+            base_size=BaseSize(height=1040, width=1040),
+
+            actions=[
+
+                URIImagemapAction(
+
+                    link_uri='https://line.me/ti/p/%40has6814j',
+
+                    area=ImagemapArea(
+
+                        x=0, y=0, width=1040, height=1040
+
+                    )
+
+                ),
+
+                MessageImagemapAction(
+
+                    text='yudha ganteng',
+
+                    area=ImagemapArea(
+
+                        x=520, y=0, width=520, height=1040
+
+                    )
+
+                )
+
+            ]
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+#=====[ Sticker MESSAGE ]==========[ ARSYBAI ]======================
+
+    elif (text == 'makasih') or (text == 'Makasih'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/153453/IOS/sticker.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'nyimak') or (text == 'Nyimak'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/13162615/IOS/sticker.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'ga') or (text == 'gak') or (text == 'gamau') or (text == 'Gamau') or (text == 'Ga') or (text == 'Gak'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/8683557/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'good night') or (text == 'Good night') or (text == 'selamat malam') or (text == 'Selamat malam'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/8683546/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'hai') or (text == 'Hai') or (text == 'halo') or (text == 'Halo'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/52002738/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'sabar') or (text == 'Sabar'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/22499899/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'wkwk') or (text == 'Wkwk'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/27695296/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'hehe') or (text == 'Hehe'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/52002763/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'siap') or (text == 'Siap'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/51626520/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif text == '?':
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/34751035/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'please') or (text == 'Please') or (text == 'tolong') or (text == 'Tolong'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/51626499/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+    elif (text == 'ok') or (text == 'oke') or (text == 'Ok') or (text == 'Oke'):
+
+        message = TemplateSendMessage(
+
+            alt_text='Yudha public bot',
+
+            template=ImageCarouselTemplate(
+
+                columns=[
+
+                    ImageCarouselColumn(
+
+                        image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/51626500/IOS/sticker_animation@2x.png',
+
+                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+
+                    )
+
+                ]
+
+            )
+
+        )
+
+        line_bot_api.reply_message(event.reply_token, message)
+
+#=======================================================================================================================
+
+import os
+
 if __name__ == "__main__":
-	port = int(os.environ.get('PORT', 5000))
-	make_static_tmp_dir()
-app.run(host='0.0.0.0', port=port)
+
+    port = int(os.environ.get('PORT', 5000))
+
+    app.run(host='0.0.0.0', port=port)
