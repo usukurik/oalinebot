@@ -164,13 +164,13 @@ def handle_message(event):
 
 
 
-    if text == '#yudbye':
+    if text == '#ucupbye':
 
         if isinstance(event.source, SourceGroup):
 
             line_bot_api.reply_message(
 
-                event.reply_token, TextSendMessage(text='Yudha pergi bye-bye'))
+                event.reply_token, TextSendMessage(text='Ucup pergi bye-bye'))
 
             line_bot_api.leave_group(event.source.group_id)
 
@@ -178,7 +178,7 @@ def handle_message(event):
 
             line_bot_api.reply_message(
 
-                event.reply_token, TextSendMessage(text='Yudha pergi bye-bye'))
+                event.reply_token, TextSendMessage(text='Ucup pergi bye-bye'))
 
             line_bot_api.leave_room(event.source.room_id)
 
@@ -274,7 +274,7 @@ def handle_message(event):
 
         line_bot_api.reply_message(event.reply_token, message)
 
-    elif (text == 'Yudha') or (text == 'Yud') or (text == 'yud') or (text == 'yudha'):
+    elif (text == 'Ucup') or (text == 'Cup') or (text == 'cup') or (text == 'yusuf'):
 
         message = TextSendMessage(text='Apa manggil-manggil cogan')
 
@@ -320,7 +320,7 @@ def handle_message(event):
 
                         label='Cek idline',
 
-                        text='/idline: yud.xx'
+                        text='/idline: yuta221217'
 
                     ),
 
@@ -384,7 +384,7 @@ def handle_message(event):
 
                         label='Bot bye',
 
-                        text='#yudbye'
+                        text='#Ucupbye'
 
                     )
 
@@ -414,7 +414,7 @@ def handle_message(event):
 
                         title='Bots v1',
 
-                        text='yudha public bot v1',
+                        text='ucup public bot v1',
 
                         actions=[
 
@@ -422,7 +422,7 @@ def handle_message(event):
 
                                 label='>ƴudha bot<',
 
-                                uri='https://line.me/ti/p/~yudpublicbotv1'
+                                uri='https://line.me/ti/p/~cuppublicbotv1'
 
                             )
 
@@ -434,7 +434,7 @@ def handle_message(event):
 
                         title='Bots v2',
 
-                        text='yudha public bot v2',
+                        text='ucup public bot v2',
 
                         actions=[
 
@@ -442,7 +442,7 @@ def handle_message(event):
 
                                 label='>ƴudha bot<',
 
-                                uri='https://line.me/ti/p/~yudpublicbotv2'
+                                uri='https://line.me/ti/p/~cuppublicbotv2'
 
                             )
 
@@ -454,7 +454,7 @@ def handle_message(event):
 
                         title='Bots official',
 
-                        text='Yudha public bot official',
+                        text='ucup public bot official',
 
                         actions=[
 
@@ -462,7 +462,7 @@ def handle_message(event):
 
                                 label='>ƴudha bot<',
 
-                                uri='https://line.me/ti/p/%40ndw0429j'
+                                uri='https://line.me/ti/p/yuta221217'
 
                             )
 
@@ -500,7 +500,7 @@ def handle_message(event):
 
                                 label='>ƴudha<',
 
-                                uri='https://line.me/ti/p/~yud.xx'
+                                uri='https://line.me/ti/p/~yuta221217'
 
                             )
 
@@ -520,7 +520,7 @@ def handle_message(event):
 
                                 label='>ƴudha<',
 
-                                uri='https://line.me/ti/p/%40has6814j'
+                                uri='https://line.me/ti/p/~yuta221217'
 
                             )
 
@@ -540,7 +540,7 @@ def handle_message(event):
 
                                 label='>ƴudha<',
 
-                                uri='https://line.me/ti/p/%40ikj9968f'
+                                uri='https://line.me/ti/p/~yuta221217'
 
                             )
 
@@ -616,7 +616,7 @@ def handle_message(event):
 
 #=====[ FLEX MESSAGE ]==========[ ARSYBAI ]======================
 
-    elif text == 'yud test':
+    elif text == 'cup test':
 
         message = ImagemapSendMessage(
 
@@ -630,7 +630,7 @@ def handle_message(event):
 
                 URIImagemapAction(
 
-                    link_uri='https://line.me/ti/p/%40has6814j',
+                    link_uri='https://line.me/ti/p/~yuta221217',
 
                     area=ImagemapArea(
 
@@ -642,7 +642,7 @@ def handle_message(event):
 
                 MessageImagemapAction(
 
-                    text='yudha ganteng',
+                    text='ucup ganteng',
 
                     area=ImagemapArea(
 
@@ -664,7 +664,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -690,7 +690,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -716,7 +716,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -742,7 +742,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -768,7 +768,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -794,7 +794,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -820,7 +820,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -846,7 +846,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -872,7 +872,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -898,7 +898,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -924,7 +924,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
@@ -950,7 +950,7 @@ def handle_message(event):
 
         message = TemplateSendMessage(
 
-            alt_text='Yudha public bot',
+            alt_text='Ucup public bot',
 
             template=ImageCarouselTemplate(
 
