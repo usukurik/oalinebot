@@ -134,7 +134,7 @@ def handle_message(event):
 
     
 
-#=====[ LEAVE GROUP OR ROOM ]==========[ ARSYBAI ]======================
+#=====[ LEAVE GROUP OR ROOM ]==========[ Ucup ]======================
 
     if text == '/me':
 
@@ -190,7 +190,7 @@ def handle_message(event):
 
                 TextSendMessage(text="Bot can't leave from 1:1 chat"))
 
-#=====[ TES MESSAGE ]=============[ ARSYBAI ]======================
+#=====[ TES MESSAGE ]=============[ Ucup ]======================
 
     if text == "redtube on":
 
@@ -220,7 +220,7 @@ def handle_message(event):
 
     		line_bot_api.reply_message(event.reply_token,VideoSendMessage(original_content_url=anu["dl"], preview_image_url=anu["img"]))
 
-#=====[ TES MESSAGE ]=============[ ARSYBAI ]======================
+#=====[ TES MESSAGE ]=============[ Ucup ]======================
 
     elif text == 'confirm':
 
@@ -292,7 +292,7 @@ def handle_message(event):
 
         line_bot_api.reply_message(event.reply_token, message)
 
-#=====[ TEMPLATE MESSAGE ]=============[ ARSYBAI ]======================
+#=====[ TEMPLATE MESSAGE ]=============[ Ucup ]======================
 
     elif text == '/tools':
 
@@ -368,7 +368,7 @@ def handle_message(event):
 
                         label='List bot',
 
-                        text='/bots yud'
+                        text='/bots ucup'
 
                     ),
 
@@ -398,9 +398,9 @@ def handle_message(event):
 
         line_bot_api.reply_message(event.reply_token, buttons_template)
 
-#=====[ CAROUSEL MESSAGE ]==========[ ARSYBAI ]======================
+#=====[ CAROUSEL MESSAGE ]==========[ Ucup ]======================
 
-    elif text == '/bots yud':
+    elif text == '/bots cup':
 
         message = TemplateSendMessage(
 
@@ -420,9 +420,9 @@ def handle_message(event):
 
                             URITemplateAction(
 
-                                label='>ƴudha bot<',
+                                label='>ucup bot<',
 
-                                uri='https://line.me/ti/p/~cuppublicbotv1'
+                                uri='https://line.me/ti/p/~yuta221217'
 
                             )
 
@@ -440,9 +440,9 @@ def handle_message(event):
 
                             URITemplateAction(
 
-                                label='>ƴudha bot<',
+                                label='>ucup bot<',
 
-                                uri='https://line.me/ti/p/~cuppublicbotv2'
+                                uri='https://line.me/ti/p/~yuta221217'
 
                             )
 
@@ -460,7 +460,7 @@ def handle_message(event):
 
                             URITemplateAction(
 
-                                label='>ƴudha bot<',
+                                label='>ucup bot<',
 
                                 uri='https://line.me/ti/p/yuta221217'
 
@@ -498,7 +498,7 @@ def handle_message(event):
 
                             URITemplateAction(
 
-                                label='>ƴudha<',
+                                label='>ucup<',
 
                                 uri='https://line.me/ti/p/~yuta221217'
 
@@ -518,7 +518,7 @@ def handle_message(event):
 
                             URITemplateAction(
 
-                                label='>ƴudha<',
+                                label='>ucup<',
 
                                 uri='https://line.me/ti/p/~yuta221217'
 
@@ -538,7 +538,7 @@ def handle_message(event):
 
                             URITemplateAction(
 
-                                label='>ƴudha<',
+                                label='>ucup<',
 
                                 uri='https://line.me/ti/p/~yuta221217'
 
@@ -614,7 +614,7 @@ def handle_message(event):
 
         return 0
 
-#=====[ FLEX MESSAGE ]==========[ ARSYBAI ]======================
+#=====[ FLEX MESSAGE ]==========[ Ucup ]======================
 
     elif text == 'cup test':
 
@@ -658,7 +658,7 @@ def handle_message(event):
 
         line_bot_api.reply_message(event.reply_token, message)
 
-#=====[ Sticker MESSAGE ]==========[ ARSYBAI ]======================
+#=====[ Sticker MESSAGE ]==========[ Ucup ]======================
 
     elif (text == 'makasih') or (text == 'Makasih'):
 
