@@ -66,11 +66,11 @@ app = Flask(__name__)
 
 # Channel Access Token
 
-line_bot_api = LineBotApi('dAA1AZl+mAy4PwIo+dMtddNuqM6PFYmDvm4bbCBATZDuo3RmQc6cUGLHhoQp9jCMFEs5J/vbvpmUXiU3nu2PpSb4RrodFgaK4seKGgP+R1gDuyE/Bhcc9nUeHEXcIj0zywH1dElgzQrd4/O4DX2f+QdB04t89/1O/w1cDnyilFU=')
+line_bot_api = LineBotApi('S23UsHtGQz0prriXJjTaVYFv5XOpYBEFB55pP24OW+V/oMzKk2JKsTU1ejYtsEjsxAeOURfqx6DxLvED2puqb7V/hkgttEtgS8B9dG3f8plq6FOY2SHZBRCOzMECaRoxTIWKbcO7tC7uPj1/d8QQSAdB04t89/1O/w1cDnyilFU=')
 
 # Channel Secret
 
-handler = WebhookHandler('e64f7eb2e5cd36493c8a2ac5e3dd28b6')
+handler = WebhookHandler('5a8da5e914b5698358a01e4ce9973d03')
 
 #===========[ NOTE SAVER ]=======================
 
