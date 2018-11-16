@@ -674,7 +674,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/153453/IOS/sticker.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -700,7 +700,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/13162615/IOS/sticker.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -726,7 +726,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/8683557/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -752,7 +752,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/8683546/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -778,7 +778,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/52002738/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -804,7 +804,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/22499899/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -830,7 +830,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/27695296/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -856,7 +856,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/52002763/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -882,7 +882,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/51626520/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -908,7 +908,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/34751035/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -934,7 +934,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/51626499/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
@@ -960,7 +960,7 @@ def handle_message(event):
 
                         image_url='https://stickershop.line-scdn.net/stickershop/v1/sticker/51626500/IOS/sticker_animation@2x.png',
 
-                        action=URIAction(uri='http://line.me/ti/p/%40has6814j')
+                        action=URIAction(uri='http://line.me/ti/p/~yuta221217')
 
                     )
 
