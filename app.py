@@ -384,7 +384,7 @@ def handle_message(event):
 
                         label='Bot bye',
 
-                        text='#Ucupbye'
+                        text='#ucupbye'
 
                     )
 
